@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="PONG icoon">
+  <!-- PONG huisstijl: icoon / favicon -->
+  <rect x="6" y="6" width="148" height="148" rx="24" fill="#12122B" stroke="#3A3A5C" stroke-width="6"/>
+  <line x1="80" y1="26" x2="80" y2="134" stroke="#EEEEEE" stroke-opacity=".28" stroke-width="5" stroke-dasharray="12 11"/>
+  <rect x="28" y="52" width="14" height="56" rx="7" fill="#4ADE80"/>
+  <rect x="118" y="52" width="14" height="56" rx="7" fill="#60A5FA"/>
+  <circle cx="80" cy="80" r="11" fill="#EEEEEE"/>
+</svg>

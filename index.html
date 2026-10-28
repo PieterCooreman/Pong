@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PONG — 1 tot 8 spelers</title>
+<link rel="icon" type="image/svg+xml" href="assets/logo-icon.svg">
+<meta name="description" content="PONG — de klassieker, opnieuw uitgevonden. Voor 1 tot 8 spelers, direct in je browser.">
+<style>
+  /* PONG huisstijl v1.0 — zie huisstijl.md. Gebruik altijd deze variabelen, geen losse hexwaarden. */
+  :root {
+    --nachtblauw: #0F0F1A;
+    --speelveld: #12122B;
+    --rand: #3A3A5C;
+    --groen: #4ADE80;
+    --blauw: #60A5FA;
+    --tekst: #EEEEEE;
+    --gedimd: #9A9AB8;
+    --knop: #1E1E32;
+    --knop-hover: #2A2A48;
+    --font: 'Segoe UI', Arial, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--nachtblauw); color: var(--tekst); font-family: var(--font);
+    display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+    padding: 16px; user-select: none; -webkit-user-select: none;
+  }
+  .brand { margin: 6px 0 2px; text-align: center; }
+  .brand img { width: min(340px, 78vw); height: auto; display: block; }
+  .brand .tagline { color: var(--gedimd); font-size: .85rem; letter-spacing: .12em; text-transform: uppercase; margin-top: 2px; }
+  h1 { position: absolute; left: -9999px; } /* alleen voor schermlezers; logo is de zichtbare titel */
+  .scoreboard {
+    display: flex; gap: 48px; align-items: baseline; margin: 6px 0 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .scoreboard .name { font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; opacity: .7; text-align: center; }
+  .scoreboard .score { font-size: 3rem; font-weight: 700; text-align: center; line-height: 1; }
+  .scoreboard .vs { font-size: 1.2rem; opacity: .4; }
+  #leftScore { color: var(--groen); } #rightScore { color: var(--blauw); }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; }
+  button, select {
+    background: var(--knop); color: var(--tekst); border: 1px solid var(--rand); border-radius: 8px;
+    padding: 8px 14px; font-size: .9rem; cursor: pointer; font-family: var(--font);
+  }
+  button:hover, select:hover { background: var(--knop-hover); }
+  button.active { background: var(--groen); color: var(--nachtblauw); border-color: var(--groen); font-weight: 700; }
+  .wrap { position: relative; width: min(900px, 100%); }
+  canvas {
+    width: 100%; display: block; background: var(--speelveld); border: 2px solid var(--rand);
+    border-radius: 10px; touch-action: none;
+  }
+  #overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px;
+    align-items: center; justify-content: center; text-align: center; padding: 20px;
+    background: rgba(10,10,25,.72); border-radius: 10px;
+  }
+  #overlay h2 { font-size: 1.8rem; }
+  #overlay p { opacity: .85; max-width: 520px; line-height: 1.5; }
+  #overlay.hidden { display: none; }
+  #playersPanel { display: none; flex-wrap: wrap; gap: 6px; justify-content: center; width: min(900px, 100%); margin-bottom: 10px; }
+  #playersPanel.visible { display: flex; }
+  .chip {
+    border: 2px solid; border-radius: 8px; padding: 5px 9px; font-size: .78rem; line-height: 1.45;
+    background: var(--knop); cursor: pointer; text-align: center; min-width: 104px;
+  }
+  .chip small { opacity: .75; display: block; }
+  .chip.dead { opacity: .35; text-decoration: line-through; }
+  .help { margin-top: 12px; font-size: .85rem; color: var(--gedimd); text-align: center; line-height: 1.7; }
+  .brandfoot { margin-top: 10px; font-size: .8rem; color: var(--gedimd); text-align: center; line-height: 1.8; }
+  .brandfoot a { color: var(--groen); text-decoration: none; }
+  .brandfoot a:hover { text-decoration: underline; }
+  kbd {
+    background: var(--knop-hover); border: 1px solid #4A4A70; border-bottom-width: 2px;
+    border-radius: 4px; padding: 1px 6px; font-family: inherit; font-size: .8em; color: var(--tekst);
+  }
+</style>
+</head>
+<body>
+
+<header class="brand">
+  <h1>PONG</h1>
+  <img src="assets/logo.svg" alt="PONG logo" width="340" height="85">
+  <p class="tagline">De klassieker, opnieuw uitgevonden</p>
+</header>
+
+<div class="scoreboard">
+  <div><div class="name" id="leftName">Speler 1</div><div class="score" id="leftScore">0</div></div>
+  <div class="vs">—</div>
+  <div><div class="name" id="rightName">Computer</div><div class="score" id="rightScore">0</div></div>
+</div>
+
+<div class="controls">
+  <button id="modeAi" class="active">1 speler (vs computer)</button>
+  <button id="mode2p">2 spelers</button>
+  <button id="mode8">8 spelers (Battle Royale)</button>
+  <select id="difficulty" title="Moeilijkheidsgraad">
+    <option value="0.055">Makkelijk</option>
+    <option value="0.085" selected>Normaal</option>
+    <option value="0.12">Moeilijk</option>
+    <option value="0.17">Onmogelijk</option>
+  </select>
+  <button id="startBtn">Start / Pauze</button>
+  <button id="resetBtn">Reset</button>
+  <label style="display:flex;align-items:center;gap:6px;font-size:.9rem;cursor:pointer">
+    <input type="checkbox" id="soundToggle" checked> Geluid
+  </label>
+</div>
+
+<div id="playersPanel" title="Klik op een speler om te wisselen tussen mens / computer"></div>
+
+<div class="wrap">
+  <canvas id="game" width="900" height="540"></canvas>
+  <div id="overlay">
+    <h2 id="overlayTitle">Pong</h2>
+    <p id="overlayText">Eerste tot 10 punten wint.<br>Druk op <kbd>Spatie</kbd> of klik op Start om te beginnen.</p>
+    <button id="overlayBtn" style="font-size:1.05rem;padding:10px 26px">Speel</button>
+  </div>
+</div>
+
+<p class="help" id="helpClassic">
+  Links: <kbd>W</kbd> / <kbd>S</kbd> &nbsp;·&nbsp; Rechts (2 spelers): <kbd>↑</kbd> / <kbd>↓</kbd>
+  &nbsp;·&nbsp; Muis / aanraken: beweeg links &nbsp;·&nbsp; <kbd>P</kbd> = pauze &nbsp;·&nbsp; <kbd>Spatie</kbd> = start/pauze
+</p>
+<p class="help" id="help8" style="display:none">
+  8 peddels, 2 per zijde. Gaat de bal door jouw helft naar buiten, dan verlies je een leven (❤×3).
+  Uitgeschakeld = jouw zijde wordt een muur. Laatste overblijver wint!<br>
+  Klik hierboven op een speler om mens ↔ computer te wisselen. Speler 1 kan ook met de muis spelen.
+  &nbsp;·&nbsp; <kbd>P</kbd> / <kbd>Spatie</kbd> = pauze/start
+</p>
+
+<footer class="brandfoot">
+  PONG · Huisstijl v1.0 ·
+  <a href="handleiding.md">Handleiding</a> ·
+  <a href="Pong-Huisstijl-en-Handleiding.pdf">Handleiding &amp; huisstijl (PDF)</a> ·
+  <a href="huisstijl.md">Huisstijl</a>
+</footer>
+
+<script>
+'use strict';
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const WIN_SCORE = 10;
+// Huisstijl-kleuren (huisstijl.md §2) — canvas kan geen CSS-variabelen lezen, dus hier centraal gedefinieerd
+const BRAND = { groen: '#4ADE80', blauw: '#60A5FA', nacht: '#0F0F1A', uitgeschakeld: '#3A3A3A' };
+
+const leftScoreEl = document.getElementById('leftScore');
+const rightScoreEl = document.getElementById('rightScore');
+const leftNameEl = document.getElementById('leftName');
+const rightNameEl = document.getElementById('rightName');
+const overlay = document.getElementById('overlay');
+const overlayTitle = document.getElementById('overlayTitle');
+const overlayText = document.getElementById('overlayText');
+const difficultyEl = document.getElementById('difficulty');
+const soundToggle = document.getElementById('soundToggle');
+
+// --- Geluid (Web Audio, geen bestanden nodig) ---
+let audioCtx = null;
+function beep(freq, dur = 0.07, type = 'square', vol = 0.06) {
+  if (!soundToggle.checked) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch (e) { /* geluid niet beschikbaar */ }
+}
+
+// --- Spelstatus ---
+const paddleW = 12, paddleH = 96, paddleMargin = 14;
+function makePaddle(x) { return { x, y: (H - paddleH) / 2, w: paddleW, h: paddleH, speed: 7.5 }; }
+let left = makePaddle(paddleMargin);
+let right = makePaddle(W - paddleMargin - paddleW);
+let ball, scoreL = 0, scoreR = 0;
+let running = false, gameOver = false, mode = 'ai'; // 'ai' | '2p'
+let keys = {}, serveTimer = 0;
+
+function resetBall(dir) {
+  const angle = (Math.random() * 0.5 - 0.25); // lichte willekeurige hoek
+  const speed = 5.2;
+  ball = {
+    x: W / 2, y: H / 2, r: 9,
+    vx: Math.cos(angle) * speed * dir,
+    vy: Math.sin(angle) * speed,
+    speed
+  };
+  serveTimer = 45; // korte pauze voor de bal vertrekt
+}
+function resetGame() {
+  scoreL = 0; scoreR = 0; gameOver = false;
+  left.y = right.y = (H - paddleH) / 2;
+  updateScore();
+  resetBall(Math.random() < 0.5 ? -1 : 1);
+}
+function updateScore() {
+  leftScoreEl.textContent = scoreL;
+  rightScoreEl.textContent = scoreR;
+}
+
+// --- 8 spelers: Battle Royale ---
+// 2 peddels per zijde. Bal door jouw helft naar buiten = leven kwijt. Laatste overblijver wint.
+const playersPanel = document.getElementById('playersPanel');
+function mkPlayer(name, side, segment, color, human, k1, k2, keyLabel, aiSpeed) {
+  return { name, side, segment, color, human, k1, k2, keyLabel, aiSpeed,
+           len: (side === 'left' || side === 'right') ? 76 : 88,
+           pos: 0, lives: 3, alive: true };
+}
+let players = [ // kleuren = spelerspalet uit huisstijl.md §2
+
+  mkPlayer('P1', 'left',   0, '#4ade80', true,  'KeyW',    'KeyS',    'W / S', 4.2),
+  mkPlayer('P2', 'left',   1, '#2dd4bf', false, 'KeyQ',    'KeyA',    'Q / A', 3.6),
+  mkPlayer('P3', 'right',  0, '#60a5fa', false, 'KeyI',    'KeyK',    'I / K', 3.9),
+  mkPlayer('P4', 'right',  1, '#a78bfa', false, 'KeyO',    'KeyL',    'O / L', 3.4),
+  mkPlayer('P5', 'top',    0, '#fb923c', false, 'Digit1',  'Digit2',  '1 / 2', 3.7),
+  mkPlayer('P6', 'top',    1, '#f472b6', false, 'Digit9',  'Digit0',  '9 / 0', 4.0),
+  mkPlayer('P7', 'bottom', 0, '#facc15', false, 'KeyZ',    'KeyX',    'Z / X', 3.5),
+  mkPlayer('P8', 'bottom', 1, '#f87171', false, 'KeyN',    'KeyM',    'N / M', 3.8),
+];
+const SIDE_LABEL = { left: 'Links', right: 'Rechts', top: 'Boven', bottom: 'Onder' };
+
+function segRange(p) {
+  const total = (p.side === 'left' || p.side === 'right') ? H : W;
+  const start = p.segment === 0 ? 0 : total / 2;
+  return [start, start + total / 2 - p.len];
+}
+function paddleRect8(p) {
+  if (p.side === 'left')   return { x: 12, y: p.pos, w: 12, h: p.len };
+  if (p.side === 'right')  return { x: W - 24, y: p.pos, w: 12, h: p.len };
+  if (p.side === 'top')    return { x: p.pos, y: 12, w: p.len, h: 12 };
+  return { x: p.pos, y: H - 24, w: p.len, h: 12 }; // bottom
+}
+function segmentPlayer(side, coord) {
+  const total = (side === 'left' || side === 'right') ? H : W;
+  const seg = coord < total / 2 ? 0 : 1;
+  return players.find(p => p.side === side && p.segment === seg);
+}
+function resetBallEight() {
+  const angle = Math.random() * Math.PI * 2, speed = 5.4;
+  ball = { x: W / 2, y: H / 2, r: 9, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, speed };
+  serveTimer = 55;
+}
+function resetEight() {
+  players.forEach(p => {
+    p.lives = 3; p.alive = true;
+    const [min, max] = segRange(p); p.pos = (min + max) / 2;
+  });
+  gameOver = false;
+  renderPlayers();
+  resetBallEight();
+}
+function renderPlayers() {
+  playersPanel.innerHTML = players.map((p, i) =>
+    `<div class="chip${p.alive ? '' : ' dead'}" data-idx="${i}" style="border-color:${p.color};color:${p.color}">` +
+    `<b>${p.name}</b> ${SIDE_LABEL[p.side]}${p.segment === 0 ? (p.side === 'left' || p.side === 'right' ? '-boven' : '-links') : (p.side === 'left' || p.side === 'right' ? '-onder' : '-rechts')}` +
+    ` ${'❤'.repeat(Math.max(0, p.lives)) || '✕'}` +
+    `<small>${p.human ? 'Mens' : 'Computer'} · ${p.keyLabel}</small></div>`
+  ).join('');
+}
+playersPanel.addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const p = players[Number(chip.dataset.idx)];
+  p.human = !p.human;
+  if (!p.human && p === players[0]) mouseY = null;
+  renderPlayers();
+});
+
+let frame8 = 0;
+function moveEightPaddles() {
+  frame8++;
+  players.forEach((p, idx) => {
+    if (!p.alive) return;
+    const [min, max] = segRange(p);
+    if (p.human) {
+      if (keys[p.k1]) p.pos -= 6.5;
+      if (keys[p.k2]) p.pos += 6.5;
+      if (p === players[0] && mouseY !== null && !keys[p.k1] && !keys[p.k2]) {
+        p.pos += ((mouseY - p.len / 2) - p.pos) * 0.35;
+      }
+    } else {
+      const vertical = (p.side === 'left' || p.side === 'right');
+      const incoming = (p.side === 'left' && ball.vx < 0) || (p.side === 'right' && ball.vx > 0) ||
+                       (p.side === 'top' && ball.vy < 0) || (p.side === 'bottom' && ball.vy > 0);
+      // Foutmarge die langzaam verschuift, zodat de computer niet perfect speelt
+      const error = Math.sin(frame8 * 0.021 + idx * 1.93) * 26;
+      const target = incoming ? (vertical ? ball.y : ball.x) - p.len / 2 + error : (min + max) / 2;
+      const dy = target - p.pos;
+      p.pos += Math.max(-p.aiSpeed, Math.min(p.aiSpeed, dy));
+    }
+    p.pos = Math.max(min, Math.min(max, p.pos));
+  });
+}
+
+function bounce8(p) {
+  const r = paddleRect8(p);
+  ball.speed = Math.min(ball.speed * 1.045, 14);
+  // Hoek met willekeurige afwijking + minimum, anders blijft de bal eindeloos recht heen-en-weer gaan
+  const deflect = rel => {
+    let a = rel * (Math.PI / 3.2) + (Math.random() - 0.5) * 0.22;
+    if (Math.abs(a) < 0.24) a = a === 0 ? (Math.random() < 0.5 ? -0.24 : 0.24) : Math.sign(a) * 0.24;
+    return Math.max(-1, Math.min(1, a));
+  };
+  if (p.side === 'left' || p.side === 'right') {
+    const dir = p.side === 'left' ? 1 : -1;
+    const angle = deflect((ball.y - (r.y + r.h / 2)) / (r.h / 2));
+    ball.vx = Math.cos(angle) * ball.speed * dir;
+    ball.vy = Math.sin(angle) * ball.speed;
+    ball.x = dir > 0 ? r.x + r.w + ball.r : r.x - ball.r;
+  } else {
+    const dir = p.side === 'top' ? 1 : -1;
+    const angle = deflect((ball.x - (r.x + r.w / 2)) / (r.w / 2));
+    ball.vx = Math.sin(angle) * ball.speed;
+    ball.vy = Math.cos(angle) * ball.speed * dir;
+    ball.y = dir > 0 ? r.y + r.h + ball.r : r.y - ball.r;
+  }
+  beep(340 + players.indexOf(p) * 45);
+}
+
+function concede(p) {
+  if (!p || !p.alive) return;
+  p.lives--;
+  beep(150, 0.2, 'sawtooth', 0.08);
+  if (p.lives <= 0) { p.alive = false; beep(85, 0.4, 'sawtooth', 0.09); }
+  renderPlayers();
+  const alive = players.filter(q => q.alive);
+  if (alive.length === 1) {
+    gameOver = true; running = false;
+    showOverlay(alive[0].name + ' wint!', `${alive[0].name} (${SIDE_LABEL[alive[0].side]}) blijft als laatste over.<br>Klik op Speel voor een nieuwe Battle Royale.`);
+    beep(880, 0.35, 'triangle', 0.08);
+  } else {
+    resetBallEight();
+  }
+}
+
+function updateEight() {
+  moveEightPaddles();
+  if (serveTimer > 0) { serveTimer--; return; }
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // Uitgeschakelde segmenten werken als muur
+  if (ball.x - ball.r <= 0 && !segmentPlayer('left', ball.y).alive)   { ball.x = ball.r;     ball.vx = Math.abs(ball.vx);  beep(200); }
+  if (ball.x + ball.r >= W && !segmentPlayer('right', ball.y).alive)  { ball.x = W - ball.r; ball.vx = -Math.abs(ball.vx); beep(200); }
+  if (ball.y - ball.r <= 0 && !segmentPlayer('top', ball.x).alive)    { ball.y = ball.r;     ball.vy = Math.abs(ball.vy);  beep(200); }
+  if (ball.y + ball.r >= H && !segmentPlayer('bottom', ball.x).alive) { ball.y = H - ball.r; ball.vy = -Math.abs(ball.vy); beep(200); }
+
+  // Peddelbotsingen
+  for (const p of players) {
+    if (!p.alive) continue;
+    const r = paddleRect8(p);
+    const overlap = ball.x + ball.r > r.x && ball.x - ball.r < r.x + r.w &&
+                    ball.y + ball.r > r.y && ball.y - ball.r < r.y + r.h;
+    if (!overlap) continue;
+    if ((p.side === 'left' && ball.vx < 0) || (p.side === 'right' && ball.vx > 0) ||
+        (p.side === 'top' && ball.vy < 0) || (p.side === 'bottom' && ball.vy > 0)) bounce8(p);
+  }
+
+  // Bal naar buiten = leven kwijt voor de verdediger van dat segment
+  if (ball.x < -ball.r) concede(segmentPlayer('left', ball.y));
+  else if (ball.x > W + ball.r) concede(segmentPlayer('right', ball.y));
+  else if (ball.y < -ball.r) concede(segmentPlayer('top', ball.x));
+  else if (ball.y > H + ball.r) concede(segmentPlayer('bottom', ball.x));
+}
+
+function drawEight() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(255,255,255,.10)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(W / 2, H / 2, 56, 0, Math.PI * 2); ctx.stroke();
+  // Randsegmenten in spelerskleuren (grijs = uitgeschakeld, werkt als muur)
+  for (const p of players) {
+    ctx.fillStyle = p.alive ? p.color : BRAND.uitgeschakeld;
+    const halfW = W / 2, halfH = H / 2;
+    if (p.side === 'left')   ctx.fillRect(0, p.segment * halfH, 5, halfH);
+    if (p.side === 'right')  ctx.fillRect(W - 5, p.segment * halfH, 5, halfH);
+    if (p.side === 'top')    ctx.fillRect(p.segment * halfW, 0, halfW, 5);
+    if (p.side === 'bottom') ctx.fillRect(p.segment * halfW, H - 5, halfW, 5);
+  }
+  // Peddels met label
+  ctx.font = '700 10px Segoe UI, Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (const p of players) {
+    if (!p.alive) continue;
+    const r = paddleRect8(p);
+    ctx.fillStyle = p.color; roundRect(r.x, r.y, r.w, r.h, 6); ctx.fill();
+    ctx.fillStyle = BRAND.nacht;
+    ctx.fillText(p.name, r.x + r.w / 2, r.y + r.h / 2);
+  }
+  if (!(serveTimer > 25 && Math.floor(serveTimer / 5) % 2 === 0)) {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
+  }
+  if (!running && !gameOver) {
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.font = '600 20px Segoe UI, Arial';
+    ctx.fillText('GEPAUZEERD', W / 2, 42);
+  }
+  ctx.textBaseline = 'alphabetic';
+}
+
+// --- Besturing ---
+window.addEventListener('keydown', e => {
+  if (['ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) e.preventDefault();
+  keys[e.code] = true;
+  if (e.code === 'Space') togglePlay();
+  if (e.code === 'KeyP') togglePlay();
+});
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+function pointerY(clientY) {
+  const r = canvas.getBoundingClientRect();
+  return (clientY - r.top) * (H / r.height);
+}
+let mouseY = null;
+canvas.addEventListener('mousemove', e => { mouseY = pointerY(e.clientY); });
+canvas.addEventListener('touchstart', e => { mouseY = pointerY(e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+canvas.addEventListener('touchmove', e => { mouseY = pointerY(e.touches[0].clientY); e.preventDefault(); }, { passive: false });
+
+function movePaddles() {
+  // Links: toetsenbord
+  if (keys['KeyW']) left.y -= left.speed;
+  if (keys['KeyS']) left.y += left.speed;
+  // Links: muis/aanraken (alleen als er geen toets wordt ingedrukt)
+  if (mouseY !== null && !keys['KeyW'] && !keys['KeyS']) {
+    const target = mouseY - left.h / 2;
+    left.y += (target - left.y) * 0.35;
+  }
+  if (mode === '2p') {
+    if (keys['ArrowUp']) right.y -= right.speed;
+    if (keys['ArrowDown']) right.y += right.speed;
+  } else {
+    // Computer: volgt de bal met instelbare traagheid + kleine foutmarge
+    const react = parseFloat(difficultyEl.value);
+    const maxStep = 3 + react * 45;
+    const target = ball.y - right.h / 2 + Math.sin(ball.x * 0.01) * 8;
+    const dy = target - right.y;
+    right.y += Math.max(-maxStep, Math.min(maxStep, dy * react * 3));
+  }
+  left.y = Math.max(0, Math.min(H - left.h, left.y));
+  right.y = Math.max(0, Math.min(H - right.h, right.y));
+}
+
+// --- Logica ---
+function update() {
+  movePaddles();
+  if (serveTimer > 0) { serveTimer--; return; }
+
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // Boven-/ondermuur
+  if (ball.y - ball.r <= 0) { ball.y = ball.r; ball.vy = Math.abs(ball.vy); beep(220); }
+  if (ball.y + ball.r >= H) { ball.y = H - ball.r; ball.vy = -Math.abs(ball.vy); beep(220); }
+
+  // Peddels
+  const hit = p => ball.x - ball.r < p.x + p.w && ball.x + ball.r > p.x &&
+                   ball.y > p.y - ball.r && ball.y < p.y + p.h;
+  if (ball.vx < 0 && hit(left)) bounce(left, 1);
+  if (ball.vx > 0 && hit(right)) bounce(right, -1);
+
+  // Punt gescoord
+  if (ball.x < -ball.r) scorePoint('R');
+  if (ball.x > W + ball.r) scorePoint('L');
+}
+
+function bounce(p, dir) {
+  const rel = (ball.y - (p.y + p.h / 2)) / (p.h / 2); // -1 .. 1
+  const angle = rel * (Math.PI / 3.2);                  // max ~56°
+  ball.speed = Math.min(ball.speed * 1.06, 15);         // steeds iets sneller
+  ball.vx = Math.cos(angle) * ball.speed * dir;
+  ball.vy = Math.sin(angle) * ball.speed;
+  ball.x = dir > 0 ? p.x + p.w + ball.r : p.x - ball.r;
+  beep(dir > 0 ? 440 : 520);
+}
+
+function scorePoint(side) {
+  if (side === 'L') scoreL++; else scoreR++;
+  updateScore();
+  beep(side === 'L' ? 660 : 160, 0.18, 'sawtooth', 0.07);
+  if (scoreL >= WIN_SCORE || scoreR >= WIN_SCORE) {
+    gameOver = true; running = false;
+    const winner = scoreL >= WIN_SCORE ? leftNameEl.textContent : rightNameEl.textContent;
+    showOverlay(winner + ' wint!', `Eindstand: ${scoreL} — ${scoreR}. Klik op Speel voor een nieuwe wedstrijd.`);
+    beep(880, 0.35, 'triangle', 0.08);
+  } else {
+    resetBall(side === 'L' ? 1 : -1); // serveer richting de scorer
+  }
+}
+
+// --- Tekenen ---
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  // Middenlijn
+  ctx.fillStyle = 'rgba(255,255,255,.22)';
+  for (let y = 8; y < H; y += 28) ctx.fillRect(W / 2 - 2, y, 4, 16);
+  ctx.beginPath(); ctx.arc(W / 2, H / 2, 64, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 3; ctx.stroke();
+  // Peddels
+  ctx.fillStyle = BRAND.groen; roundRect(left.x, left.y, left.w, left.h, 6); ctx.fill();
+  ctx.fillStyle = BRAND.blauw; roundRect(right.x, right.y, right.w, right.h, 6); ctx.fill();
+  // Bal (knippert tijdens serveerpauze)
+  if (!(serveTimer > 25 && Math.floor(serveTimer / 5) % 2 === 0)) {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
+  }
+  if (!running && !gameOver) {
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    ctx.font = '600 20px Segoe UI, Arial'; ctx.textAlign = 'center';
+    ctx.fillText('GEPAUZEERD', W / 2, 42);
+  }
+}
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function loop() {
+  if (mode === 'eight') {
+    if (running) updateEight();
+    else if (!gameOver) moveEightPaddles();
+    drawEight();
+  } else {
+    if (running) update();
+    else movePaddlesIdle();
+    draw();
+  }
+  requestAnimationFrame(loop);
+}
+function movePaddlesIdle() {
+  // Peddels blijven bestuurbaar in het menu/pauze, bal staat stil
+  if (!gameOver) movePaddles();
+}
+
+// --- UI ---
+function showOverlay(title, text) {
+  overlayTitle.textContent = title;
+  overlayText.innerHTML = text;
+  overlay.classList.remove('hidden');
+}
+function hideOverlay() { overlay.classList.add('hidden'); }
+
+function resetCurrent() { if (mode === 'eight') resetEight(); else resetGame(); }
+function showStartOverlay() {
+  if (mode === 'eight') {
+    showOverlay('Pong — 8 spelers', 'Battle Royale: 8 peddels, 3 levens per speler.<br>Laatste overblijver wint. Klik op een speler hierboven om mens/computer te wisselen.<br>Druk op <kbd>Spatie</kbd> of klik op Speel om te beginnen.');
+  } else {
+    showOverlay('Pong', 'Eerste tot 10 punten wint.<br>Druk op <kbd>Spatie</kbd> of klik op Start om te beginnen.');
+  }
+}
+function togglePlay() {
+  if (gameOver) { resetCurrent(); }
+  running = !running;
+  if (running) hideOverlay(); else if (!gameOver) showOverlay('Pauze', 'Druk op <kbd>Spatie</kbd> om verder te spelen.');
+}
+function startFromOverlay() {
+  if (gameOver) resetCurrent();
+  running = true;
+  hideOverlay();
+}
+
+document.getElementById('startBtn').addEventListener('click', togglePlay);
+document.getElementById('overlayBtn').addEventListener('click', startFromOverlay);
+document.getElementById('resetBtn').addEventListener('click', () => {
+  resetCurrent(); running = false;
+  showStartOverlay();
+});
+const modeAiBtn = document.getElementById('modeAi');
+const mode2pBtn = document.getElementById('mode2p');
+const mode8Btn = document.getElementById('mode8');
+function setMode(m) {
+  mode = m;
+  modeAiBtn.classList.toggle('active', m === 'ai');
+  mode2pBtn.classList.toggle('active', m === '2p');
+  mode8Btn.classList.toggle('active', m === 'eight');
+  difficultyEl.style.display = m === 'ai' ? '' : 'none';
+  playersPanel.classList.toggle('visible', m === 'eight');
+  document.querySelector('.scoreboard').style.display = m === 'eight' ? 'none' : 'flex';
+  document.getElementById('helpClassic').style.display = m === 'eight' ? 'none' : '';
+  document.getElementById('help8').style.display = m === 'eight' ? '' : 'none';
+  rightNameEl.textContent = m === 'ai' ? 'Computer' : 'Speler 2';
+  leftNameEl.textContent = 'Speler 1';
+  mouseY = null;
+  resetCurrent(); running = false;
+  showStartOverlay();
+}
+modeAiBtn.addEventListener('click', () => setMode('ai'));
+mode2pBtn.addEventListener('click', () => setMode('2p'));
+mode8Btn.addEventListener('click', () => setMode('eight'));
+
+resetGame();
+loop();
+</script>
+</body>
+</html>

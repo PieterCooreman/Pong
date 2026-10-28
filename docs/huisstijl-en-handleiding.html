@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>PONG — Huisstijl &amp; Gebruikershandleiding</title>
+<link rel="icon" type="image/svg+xml" href="../assets/logo-icon.svg">
+<style>
+  /* PONG huisstijl v1.0 — zie huisstijl.md. Dezelfde variabelen als het spel. */
+  :root{
+    --nachtblauw:#0F0F1A; --speelveld:#12122B; --rand:#3A3A5C; --groen:#4ADE80;
+    --blauw:#60A5FA; --tekst:#EEEEEE; --gedimd:#9A9AB8; --knop:#1E1E32; --papier:#FFFFFF; --inkt:#1B1B28;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;color:var(--inkt);background:#E9E9F2;font-size:10.5pt;line-height:1.55}
+  .page{background:var(--papier);width:210mm;min-height:296mm;margin:8mm auto;padding:18mm 16mm;box-shadow:0 2px 14px rgba(0,0,0,.25)}
+  h1,h2,h3{text-transform:uppercase;letter-spacing:.06em}
+  h2{font-size:17pt;color:var(--speelveld);border-bottom:3px solid var(--groen);padding-bottom:4px;margin:22px 0 10px}
+  h2:first-child{margin-top:0}
+  h3{font-size:11.5pt;margin:16px 0 6px;color:#2A2A48}
+  p{margin:0 0 8px}
+  ul{margin:0 0 8px 18px}
+  table{border-collapse:collapse;width:100%;margin:8px 0 14px;font-size:9.5pt}
+  th{background:var(--speelveld);color:var(--tekst);text-align:left;padding:6px 8px}
+  td{border:1px solid #C9C9DC;padding:5px 8px;vertical-align:top}
+  tr:nth-child(even) td{background:#F3F3FA}
+  kbd{background:#E4E4F0;border:1px solid #A9A9C4;border-bottom-width:2px;border-radius:4px;padding:0 5px;font-family:inherit;font-size:.85em;white-space:nowrap}
+  .tip{background:#EFFDF3;border-left:4px solid var(--groen);padding:8px 12px;margin:10px 0}
+  .note{background:#FFF7E8;border-left:4px solid #FACC15;padding:8px 12px;margin:10px 0}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+  .sw{flex:1 1 100px;border:1px solid #C9C9DC;border-radius:8px;overflow:hidden;font-size:8.5pt}
+  .sw div{height:44px}
+  .sw span{display:block;padding:5px 7px;background:#fff}
+  .logos{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin:8px 0}
+  .logos figure{border:1px solid #C9C9DC;border-radius:8px;padding:10px;text-align:center;font-size:8.5pt;color:#55556E}
+  .darkbox{background:var(--nachtblauw);border-radius:8px;padding:12px}
+  .foot{margin-top:26px;padding-top:8px;border-top:1px solid #C9C9DC;color:#55556E;font-size:8.5pt;display:flex;justify-content:space-between}
+  /* Cover */
+  .cover{background:var(--nachtblauw);color:var(--tekst);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .cover img{width:150mm;max-width:88%}
+  .cover .sub{color:var(--gedimd);letter-spacing:.3em;text-transform:uppercase;font-size:11pt;margin-top:10mm}
+  .cover h1{font-size:26pt;letter-spacing:.12em;margin-top:16mm}
+  .cover .meta{position:relative;margin-top:22mm;color:var(--gedimd);font-size:10pt;line-height:1.9}
+  .cover .meta b{color:var(--tekst)}
+  @media print{
+    body{background:#fff;font-size:10pt}
+    .page{box-shadow:none;margin:0;width:auto;min-height:auto;padding:13mm 14mm;page-break-after:always}
+    .page:last-child{page-break-after:auto}
+    .cover{min-height:270mm}
+    h2{margin:14px 0 8px}
+    h3{margin:11px 0 4px}
+    td{padding:4px 7px}
+    .sw div{height:30px}
+    .logos{gap:8px;margin:4px 0}
+    .logos figure{padding:6px}
+    .logos figure img{width:46mm !important}
+    .logos figure:nth-child(3) img{width:19mm !important}
+    .logos .darkbox{padding:7px}
+    .foot{margin-top:14px}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+  @page{size:A4;margin:0}
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<section class="page cover">
+  <img src="../assets/logo.svg" alt="PONG logo">
+  <p class="sub">De klassieker, opnieuw uitgevonden · 1 tot 8 spelers</p>
+  <h1>Huisstijl &amp;<br>Gebruikers&shy;handleiding</h1>
+  <p class="meta"><b>PONG huisstijl v1.0</b> · Versie 1.0 · oktober 2026<br>github.com/PieterCooreman/Pong</p>
+</section>
+
+<!-- ============ DEEL 1: HUISSTIJL ============ -->
+<section class="page">
+  <h2>Deel 1 · Huisstijl</h2>
+  <p><b>Merkbelofte:</b> <i>De klassieker, opnieuw uitgevonden — voor 1 tot 8 spelers.</i> PONG is retro in uitstraling en modern in gebruik: donker speelveld, neonaccenten, één scherm, geen installatie.</p>
+
+  <h3>1. Logo</h3>
+  <div class="logos">
+    <figure><div class="darkbox"><img src="../assets/logo.svg" alt="Primair logo" style="width:62mm"></div><figcaption>Primair logo — donkere achtergrond<br><code>assets/logo.svg</code></figcaption></figure>
+    <figure><img src="../assets/logo-licht.svg" alt="Logo lichte achtergrond" style="width:62mm"><figcaption>Logo voor lichte achtergrond<br><code>assets/logo-licht.svg</code></figcaption></figure>
+    <figure><div class="darkbox"><img src="../assets/logo-icon.svg" alt="Icoon" style="width:26mm"></div><figcaption>Icoon / favicon<br><code>assets/logo-icon.svg</code></figcaption></figure>
+  </div>
+  <p>Het icoon toont het speelveld: groene peddel (links), blauwe peddel (rechts), witte bal en gestippelde middenlijn in een afgerond indigo vlak. In het woordmerk is de <b>N altijd Neon Groen</b>.</p>
+  <ul>
+    <li>Vrije ruimte rond het logo: minimaal de hoogte van de bal aan alle zijden.</li>
+    <li>Minimale breedte: 120 px (logo), 24 px (icoon).</li>
+    <li>Niet uitrekken, roteren, vervormen, geen schaduw of extra omlijning.</li>
+    <li>Alleen kleuren uit het palet hieronder; de groene N nooit weghalen.</li>
+    <li>Op drukke achtergronden: icoon plaatsen op Nachtblauw of Speelveld Indigo.</li>
+  </ul>
+
+  <h3>2. Kleuren — basispalet</h3>
+  <div class="swatches">
+    <div class="sw"><div style="background:#0F0F1A"></div><span><b>Nachtblauw</b><br>#0F0F1A · achtergrond</span></div>
+    <div class="sw"><div style="background:#12122B"></div><span><b>Speelveld Indigo</b><br>#12122B · speelveld</span></div>
+    <div class="sw"><div style="background:#3A3A5C"></div><span><b>Rand Indigo</b><br>#3A3A5C · randen</span></div>
+    <div class="sw"><div style="background:#4ADE80"></div><span><b>Neon Groen</b><br>#4ADE80 · primair</span></div>
+    <div class="sw"><div style="background:#60A5FA"></div><span><b>Arcade Blauw</b><br>#60A5FA · secundair</span></div>
+    <div class="sw"><div style="background:#EEEEEE"></div><span><b>Sterrenwit</b><br>#EEEEEE · tekst/bal</span></div>
+    <div class="sw"><div style="background:#9A9AB8"></div><span><b>Gedimd Paarsgrijs</b><br>#9A9AB8 · bijtekst</span></div>
+  </div>
+
+  <h3>Spelerspalet (8 spelers)</h3>
+  <table>
+    <tr><th>Speler</th><th>Kleur</th><th>Hex</th><th>Speler</th><th>Kleur</th><th>Hex</th></tr>
+    <tr><td>P1</td><td>Neon Groen</td><td><code>#4ADE80</code></td><td>P5</td><td>Oranje</td><td><code>#FB923C</code></td></tr>
+    <tr><td>P2</td><td>Turkoois</td><td><code>#2DD4BF</code></td><td>P6</td><td>Roze</td><td><code>#F472B6</code></td></tr>
+    <tr><td>P3</td><td>Arcade Blauw</td><td><code>#60A5FA</code></td><td>P7</td><td>Geel</td><td><code>#FACC15</code></td></tr>
+    <tr><td>P4</td><td>Paars</td><td><code>#A78BFA</code></td><td>P8</td><td>Rood</td><td><code>#F87171</code></td></tr>
+  </table>
+  <p>Uitgeschakelde spelers zijn altijd grijs (<code>#3A3A3A</code>). Kleur is nooit de enige informatie: elke speler heeft ook een nummer (P1–P8) en een positielabel.</p>
+  <div class="foot"><span>PONG — Huisstijl &amp; Gebruikershandleiding</span><span>Huisstijl v1.0 · Deel 1</span></div>
+</section>
+
+<section class="page">
+  <h3>3. Typografie</h3>
+  <table>
+    <tr><th>Element</th><th>Lettertype</th><th>Stijl</th></tr>
+    <tr><td>Koppen en logo</td><td>'Segoe UI', Arial, sans-serif</td><td>Vet (700), hoofdletters, hoofdtitel met letterspatiëring 0,35 em</td></tr>
+    <tr><td>Lopende tekst</td><td>'Segoe UI', Arial, sans-serif</td><td>Normaal (400)</td></tr>
+    <tr><td>Scores en cijfers</td><td>Zelfde lettertype</td><td>Tabulaire cijfers (<code>tabular-nums</code>), vet</td></tr>
+    <tr><td>Toetsen</td><td>Systeemfont, <code>&lt;kbd&gt;</code>-stijl</td><td>Achtergrond #2A2A48, rand #4A4A70, hoeken 4 px</td></tr>
+  </table>
+  <p>Er worden geen externe webfonts geladen: alles werkt offline en zonder installatie.</p>
+
+  <h3>4. Vormtaal en componenten</h3>
+  <ul>
+    <li><b>Afgeronde hoeken:</b> 6 px (peddels), 8 px (knoppen en chips), 10 px (speelveld en overlays).</li>
+    <li><b>Knoppen:</b> achtergrond <code>#1E1E32</code>, rand Rand Indigo, tekst Sterrenwit. Actieve modusknop: volledig Neon Groen met Nachtblauw tekst.</li>
+    <li><b>Overlay</b> (start/pauze/einde): Nachtblauw aan 72% dekking, gecentreerd, één hoofdknop.</li>
+    <li><b>Spelers-chips:</b> rand van 2 px in de spelerskleuren; nummer, positie, levens en besturing in één oogopslag.</li>
+    <li><b>Iconografie:</b> alleen vormen uit het spel (peddel, bal, middenlijn). Geen stockiconen.</li>
+  </ul>
+
+  <h3>5. Toon en taal</h3>
+  <ul>
+    <li>Nederlands, korte zinnen, vriendelijk en direct: "Druk op Spatie om te beginnen".</li>
+    <li>Je-vorm, geen jargon; speltermen worden bij eerste gebruik uitgelegd.</li>
+    <li>Hoofdletters alleen voor de merknaam PONG en spelstatussen (bv. GEPAUZEERD).</li>
+  </ul>
+
+  <h3>6. Toegankelijkheid</h3>
+  <ul>
+    <li>Tekstcontrast minimaal AA op Nachtblauw.</li>
+    <li>Kleur nooit als enige informatiedrager (spelersnummers P1–P8).</li>
+    <li>Volledig speelbaar met alleen het toetsenbord.</li>
+  </ul>
+
+  <div class="tip"><b>Consistentie-check:</b> het spel gebruikt exact deze variabelen (<code>--nachtblauw</code>, <code>--speelveld</code>, <code>--rand</code>, <code>--groen</code>, <code>--blauw</code>, <code>--tekst</code>, <code>--gedimd</code>) in CSS én in de canvas-tekening, het logo staat in de header van het spel en als favicon, en deze PDF is in dezelfde stijl gezet.</div>
+  <div class="foot"><span>PONG — Huisstijl &amp; Gebruikershandleiding</span><span>Huisstijl v1.0 · Deel 1</span></div>
+</section>
+
+<!-- ============ DEEL 2: HANDLEIDING ============ -->
+<section class="page">
+  <h2>Deel 2 · Gebruikershandleiding</h2>
+
+  <h3>1. Starten</h3>
+  <ul>
+    <li>Open <code>index.html</code> in een moderne browser (Chrome, Edge, Firefox, Safari). Dubbelklikken volstaat; geen internet of installatie nodig.</li>
+    <li>Kies een spelmodus: <b>1 speler</b>, <b>2 spelers</b> of <b>8 spelers (Battle Royale)</b>.</li>
+    <li>Klik op <b>Speel</b> of druk op <kbd>Spatie</kbd>.</li>
+  </ul>
+  <div class="tip">Het spel verzamelt geen gegevens en werkt volledig lokaal in je browser.</div>
+
+  <h3>2. Spelmodi</h3>
+  <p><b>1 speler:</b> jij (links, groen) tegen de computer (rechts, blauw). Moeilijkheidsgraad naar keuze:</p>
+  <table>
+    <tr><th>Niveau</th><th>Wat je merkt</th></tr>
+    <tr><td>Makkelijk</td><td>Trage computer, ruim tijd om te reageren</td></tr>
+    <tr><td>Normaal</td><td>Eerlijke tegenstander voor beginners</td></tr>
+    <tr><td>Moeilijk</td><td>Snelle reacties, kleine foutmarge</td></tr>
+    <tr><td>Onmogelijk</td><td>Vrijwel perfecte computer — voor wie een uitdaging zoekt</td></tr>
+  </table>
+  <p><b>2 spelers:</b> samen op één scherm; links <kbd>W</kbd>/<kbd>S</kbd>, rechts de pijltjestoetsen. De computer doet niet mee.</p>
+  <p><b>8 spelers — Battle Royale:</b> acht peddels, twee per zijde (ook boven en onder). Iedereen verdedigt zijn eigen helft:</p>
+  <ul>
+    <li>Je begint met <b>3 levens</b> (hartjes in je spelers-chip).</li>
+    <li>Gaat de bal via jouw helft naar buiten, dan verlies je een leven; de bal wordt opnieuw vanuit het midden geserveerd.</li>
+    <li>Bij 0 levens ben je <b>uitgeschakeld</b>: je peddel verdwijnt, je randsegment wordt grijs en werkt voortaan als muur.</li>
+    <li>De <b>laatste overblijver wint</b>.</li>
+    <li>Klik op een spelers-chip om die plek te wisselen tussen <i>Mens</i> en <i>Computer</i> — zo speel je alleen tegen 7 computers, met twee tegen zes, of met 8 mensen.</li>
+  </ul>
+
+  <h3>3. Besturing — algemeen</h3>
+  <table>
+    <tr><th>Toets / actie</th><th>Functie</th></tr>
+    <tr><td><kbd>Spatie</kbd></td><td>Starten / pauzeren / verder spelen</td></tr>
+    <tr><td><kbd>P</kbd></td><td>Pauzeren / verder spelen</td></tr>
+    <tr><td>Muis bewegen</td><td>Linker peddel (klassiek) of P1 (Battle Royale)</td></tr>
+    <tr><td>Aanraken en slepen</td><td>Zelfde als muis (tablet/telefoon)</td></tr>
+  </table>
+  <div class="foot"><span>PONG — Huisstijl &amp; Gebruikershandleiding</span><span>Handleiding v1.0 · Deel 2</span></div>
+</section>
+
+<section class="page">
+  <h3>Besturing — Battle Royale</h3>
+  <table>
+    <tr><th>Speler</th><th>Positie</th><th>Kleur</th><th>Toetsen</th></tr>
+    <tr><td>P1</td><td>Links-boven</td><td>Groen</td><td><kbd>W</kbd> / <kbd>S</kbd> (ook muis)</td></tr>
+    <tr><td>P2</td><td>Links-onder</td><td>Turkoois</td><td><kbd>Q</kbd> / <kbd>A</kbd></td></tr>
+    <tr><td>P3</td><td>Rechts-boven</td><td>Blauw</td><td><kbd>I</kbd> / <kbd>K</kbd></td></tr>
+    <tr><td>P4</td><td>Rechts-onder</td><td>Paars</td><td><kbd>O</kbd> / <kbd>L</kbd></td></tr>
+    <tr><td>P5</td><td>Boven-links</td><td>Oranje</td><td><kbd>1</kbd> / <kbd>2</kbd></td></tr>
+    <tr><td>P6</td><td>Boven-rechts</td><td>Roze</td><td><kbd>9</kbd> / <kbd>0</kbd></td></tr>
+    <tr><td>P7</td><td>Onder-links</td><td>Geel</td><td><kbd>Z</kbd> / <kbd>X</kbd></td></tr>
+    <tr><td>P8</td><td>Onder-rechts</td><td>Rood</td><td><kbd>N</kbd> / <kbd>M</kbd></td></tr>
+  </table>
+  <div class="note"><b>AZERTY-toetsenbord?</b> De toetsen volgen de fysieke positie op een QWERTY-toetsenbord. Op een Belgisch AZERTY-bord zitten sommige letters ergens anders: gebruik de toets op dezelfde plaats, of speel P1 met de muis.</div>
+
+  <h3>4. Spelregels (klassieke modi)</h3>
+  <ul>
+    <li>Bal voorbij de peddel van de tegenstander = <b>1 punt</b>. Daarna wordt geserveerd richting de scorer.</li>
+    <li>Na elke serve knippert de bal even in het midden: dat is je reactietijd.</li>
+    <li>De bal wordt bij elke peddelhit <b>sneller</b> (tot een maximum).</li>
+    <li><b>Waar</b> je de bal raakt, bepaalt de hoek: midden = recht, rand = schuin (tot ±56°).</li>
+    <li>Eerste met <b>10 punten</b> wint. Klik op <b>Speel</b> voor een nieuwe wedstrijd.</li>
+  </ul>
+
+  <h3>5. Knoppen en opties</h3>
+  <table>
+    <tr><th>Element</th><th>Functie</th></tr>
+    <tr><td>Modusknoppen</td><td>Wisselen tussen 1 speler, 2 spelers en 8 spelers; de stand wordt gereset</td></tr>
+    <tr><td>Moeilijkheidsgraad</td><td>Alleen zichtbaar in modus 1 speler</td></tr>
+    <tr><td>Start / Pauze</td><td>Start of pauzeert (zelfde als <kbd>Spatie</kbd>)</td></tr>
+    <tr><td>Reset</td><td>Score/levens en bal terug naar het begin</td></tr>
+    <tr><td>Geluid (vinkje)</td><td>Pieptonen bij botsingen en punten aan/uit</td></tr>
+    <tr><td>Spelers-chips (8 spelers)</td><td>Klik: wisselt die plek tussen mens en computer</td></tr>
+  </table>
+
+  <h3>6. Tips</h3>
+  <ul>
+    <li>Keer na elke slag terug naar het midden van je zijde.</li>
+    <li>Raak de bal aan de rand van je peddel voor een schuine, verrassende bal.</li>
+    <li>Battle Royale: verdedig eerst je eigen helft; wie te ver opschuift, laat zijn hoek open.</li>
+    <li>Tegen de computer op "Onmogelijk": sla vroeg en schuin, of verlaag het niveau.</li>
+  </ul>
+  <div class="foot"><span>PONG — Huisstijl &amp; Gebruikershandleiding</span><span>Handleiding v1.0 · Deel 2</span></div>
+</section>
+
+<section class="page">
+  <h3>7. Problemen oplossen</h3>
+  <table>
+    <tr><th>Probleem</th><th>Oplossing</th></tr>
+    <tr><td>Spel reageert niet op toetsen</td><td>Klik één keer in het spelvenster (focus) en druk op <kbd>Spatie</kbd>.</td></tr>
+    <tr><td>Geen geluid</td><td>Zet het vinkje <b>Geluid</b> aan. Browsers spelen pas geluid na een eerste klik/toets: start met de knop <b>Speel</b>.</td></tr>
+    <tr><td>Bal even onzichtbaar na een punt</td><td>Dat klopt: tijdens de serveerpauze knippert de bal in het midden.</td></tr>
+    <tr><td>Letters werken "verkeerd"</td><td>Zie de AZERTY-opmerking bij de besturing: fysieke QWERTY-posities.</td></tr>
+    <tr><td>Te groot / te klein beeld</td><td>Het veld schaalt mee met je venster; zoom met <kbd>Ctrl</kbd>+<kbd>+</kbd> / <kbd>-</kbd>.</td></tr>
+    <tr><td>Opnieuw beginnen</td><td>Klik op <b>Reset</b> of wissel van modus.</td></tr>
+  </table>
+
+  <h3>8. Systeemvereisten</h3>
+  <ul>
+    <li>Moderne browser met JavaScript (Chrome, Edge, Firefox, Safari).</li>
+    <li>Venster van minstens ±360 px breed; muis, touchscreen en/of toetsenbord.</li>
+    <li>Geen installatie, geen internet, geen account, geen gegevensopslag.</li>
+  </ul>
+
+  <h3>9. Versie en bronnen</h3>
+  <ul>
+    <li>Spel, huisstijl en handleiding: <b>PONG huisstijl v1.0</b>, handleiding v1.0 (oktober 2026).</li>
+    <li>Broncode en documentatie: <b>github.com/PieterCooreman/Pong</b></li>
+    <li>Bestanden: <code>huisstijl.md</code> (huisstijl), <code>handleiding.md</code> (handleiding), <code>docs/huisstijl-en-handleiding.html</code> (deze printversie), <code>Pong-Huisstijl-en-Handleiding.pdf</code>.</li>
+  </ul>
+  <div class="tip">Veel speelplezier — en vergeet niet: de bal wordt alleen maar sneller.</div>
+  <div class="foot"><span>PONG — Huisstijl &amp; Gebruikershandleiding</span><span>Handleiding v1.0 · Deel 2 · Einde</span></div>
+</section>
+
+</body>
+</html>
